@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cybersecurity Game</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <h1>Cybersecurity Game</h1>
+
+    <div id="game-area">
+        <h2>Enter Attacks and Defenses</h2>
+        <form id="gameForm">
+            <!-- Team 1 Inputs -->
+            <div>
+                <h3>Team 1 - Attacks</h3>
+                <input type="text" id="team1Attack1" placeholder="Attack 1">
+                <input type="text" id="team1Attack2" placeholder="Attack 2">
+                <input type="text" id="team1Attack3" placeholder="Attack 3">
+                
+                <h3>Team 1 - Defenses</h3>
+                <input type="text" id="team1Defense1" placeholder="Defense 1">
+                <input type="text" id="team1Defense2" placeholder="Defense 2">
+                <input type="text" id="team1Defense3" placeholder="Defense 3">
+            </div>
+
+            <!-- Team 2 Inputs -->
+            <div>
+                <h3>Team 2 - Attacks</h3>
+                <input type="text" id="team2Attack1" placeholder="Attack 1">
+                <input type="text" id="team2Attack2" placeholder="Attack 2">
+                <input type="text" id="team2Attack3" placeholder="Attack 3">
+                
+                <h3>Team 2 - Defenses</h3>
+                <input type="text" id="team2Defense1" placeholder="Defense 1">
+                <input type="text" id="team2Defense2" placeholder="Defense 2">
+                <input type="text" id="team2Defense3" placeholder="Defense 3">
+            </div>
+
+            <button type="button" onclick="determineWinner()">Submit</button>
+        </form>
+
+        <div id="results">
+            <h2>Results:</h2>
+            <p id="winner">Winner: </p>
+            <p id="team1Points">Team 1 Points: </p>
+            <p id="team2Points">Team 2 Points: </p>
+        </div>
+    </div>
+
+    <script src="gameLogic.js"></script>
+</body>
+</html>
