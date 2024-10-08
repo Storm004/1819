@@ -44,13 +44,14 @@
             border: none;
             border-radius: 5px;
             cursor: pointer;
+            margin-top: 20px;
         }
     </style>
 </head>
 
 <body>
-    <h1>Submit Your Attacks and Defenses</h1>
 
+    <h1>Submit Your Attacks and Defenses</h1>
     <form id="attackDefenseForm">
         <label for="attack1">Enter Attack 1:</label>
         <select id="attack1">
@@ -58,6 +59,10 @@
             <option value="Brute Force">Brute Force</option>
             <option value="SQL Injection">SQL Injection</option>
             <option value="Phishing">Phishing</option>
+            <option value="Man-in-the-Middle">Man-in-the-Middle</option>
+            <option value="Ransomware">Ransomware</option>
+            <option value="Spoofing">Spoofing</option>
+            <option value="Data Breach">Data Breach</option>
         </select>
 
         <label for="attack2">Enter Attack 2:</label>
@@ -66,6 +71,10 @@
             <option value="Brute Force">Brute Force</option>
             <option value="SQL Injection">SQL Injection</option>
             <option value="Phishing">Phishing</option>
+            <option value="Man-in-the-Middle">Man-in-the-Middle</option>
+            <option value="Ransomware">Ransomware</option>
+            <option value="Spoofing">Spoofing</option>
+            <option value="Data Breach">Data Breach</option>
         </select>
 
         <label for="attack3">Enter Attack 3:</label>
@@ -74,6 +83,10 @@
             <option value="Brute Force">Brute Force</option>
             <option value="SQL Injection">SQL Injection</option>
             <option value="Phishing">Phishing</option>
+            <option value="Man-in-the-Middle">Man-in-the-Middle</option>
+            <option value="Ransomware">Ransomware</option>
+            <option value="Spoofing">Spoofing</option>
+            <option value="Data Breach">Data Breach</option>
         </select>
 
         <h2>Defenses:</h2>
@@ -84,6 +97,9 @@
             <option value="Encryption">Encryption</option>
             <option value="MFA">MFA</option>
             <option value="Antivirus">Antivirus</option>
+            <option value="Packet Filtering">Packet Filtering</option>
+            <option value="Intrusion Detection">Intrusion Detection</option>
+            <option value="Logging">Logging</option>
         </select>
 
         <label for="defense2">Enter Defense 2:</label>
@@ -92,6 +108,9 @@
             <option value="Encryption">Encryption</option>
             <option value="MFA">MFA</option>
             <option value="Antivirus">Antivirus</option>
+            <option value="Packet Filtering">Packet Filtering</option>
+            <option value="Intrusion Detection">Intrusion Detection</option>
+            <option value="Logging">Logging</option>
         </select>
 
         <label for="defense3">Enter Defense 3:</label>
@@ -100,36 +119,14 @@
             <option value="Encryption">Encryption</option>
             <option value="MFA">MFA</option>
             <option value="Antivirus">Antivirus</option>
+            <option value="Packet Filtering">Packet Filtering</option>
+            <option value="Intrusion Detection">Intrusion Detection</option>
+            <option value="Logging">Logging</option>
         </select>
 
         <button type="submit">Submit Actions</button>
     </form>
 
-    <script>
-        const form = document.getElementById('attackDefenseForm');
-
-        form.addEventListener('submit', (event) => {
-            event.preventDefault();
-
-            const attack1 = document.getElementById('attack1').value;
-            const attack2 = document.getElementById('attack2').value;
-            const attack3 = document.getElementById('attack3').value;
-
-            const defense1 = document.getElementById('defense1').value;
-            const defense2 = document.getElementById('defense2').value;
-            const defense3 = document.getElementById('defense3').value;
-
-            const actions = {
-                attacks: [attack1, attack2, attack3],
-                defenses: [defense1, defense2, defense3]
-            };
-
-            console.log(actions);
-
-            // Send the actions to the server (uncomment the following line to connect with the server)
-            // socket.emit('submitActions', actions);
-        });
-    </script>
 </body>
 
 </html>
