@@ -8,99 +8,117 @@
     <style>
         body {
             font-family: Arial, sans-serif;
-            background-color: #f4f4f4;
             text-align: center;
-            padding: 50px;
+            background-color: #f4f4f4;
+            margin: 0;
+            padding: 0;
         }
 
         h1 {
-            font-size: 2.5em;
-            color: #333;
+            margin-top: 50px;
         }
 
-        #partyForm,
-        #partyList {
-            margin: 20px auto;
-            text-align: left;
-            width: 300px;
+        #partyOptions {
+            display: none;
+            margin-top: 20px;
         }
 
-        #partyForm input,
-        #partyForm button {
-            padding: 10px;
-            margin: 10px 0;
-            width: 100%;
-        }
-
-        #partyList ul {
+        #availablePartiesList {
+            margin-top: 20px;
             list-style: none;
             padding: 0;
         }
 
-        #partyList ul li {
-            background-color: #e9e9e9;
-            padding: 10px;
-            margin-bottom: 5px;
+        .party-item {
             display: flex;
-            justify-content: space-between;
+            justify-content: center;
             align-items: center;
+            background-color: #eee;
+            padding: 10px;
+            margin-bottom: 10px;
+            border-radius: 5px;
+            max-width: 300px;
+            margin-left: auto;
+            margin-right: auto;
         }
 
-        #partyList ul li button {
-            padding: 5px 10px;
+        .party-item button {
             background-color: #28a745;
             color: white;
             border: none;
+            padding: 5px 10px;
+            margin-left: 10px;
             cursor: pointer;
-        }
-
-        #partyList ul li button:hover {
-            background-color: #218838;
+            border-radius: 5px;
         }
     </style>
 </head>
 
 <body>
     <h1>Welcome to the Cybersecurity Multiplayer Game</h1>
-    <p>Enter your team name to begin the battle!</p>
+    <p id="instructions">Enter your team name to begin the battle!</p>
 
-    <div id="partyForm">
-        <input type="text" id="teamNameInput" placeholder="Enter your team name">
-        <button id="createPartyButton">Create Party</button>
+    <div id="teamNameInput">
+        <form id="teamForm">
+            <input type="text" id="teamName" placeholder="Enter your team name" required>
+            <button type="submit">Submit</button>
+        </form>
     </div>
 
-    <h2>Available Parties:</h2>
-    <div id="partyList">
-        <ul id="partyListUl"></ul>
+    <div id="partyOptions">
+        <h2>Party Options</h2>
+        <button id="createPartyButton">Create Party</button>
+        <h3>Available Parties:</h3>
+        <ul id="availablePartiesList"></ul>
     </div>
 
     <script src="/socket.io/socket.io.js"></script>
     <script>
         const socket = io();
 
-        // Party creation event
+        // Handle team name submission
+        document.getElementById('teamForm').addEventListener('submit', (event) => {
+            event.preventDefault();
+            const teamName = document.getElementById('teamName').value;
+            socket.emit('enterGame', teamName);
+            document.getElementById('teamForm').style.display = 'none';
+            document.getElementById('partyOptions').style.display = 'block';
+        });
+
+        // Create Party button event
         document.getElementById('createPartyButton').addEventListener('click', () => {
-            const teamName = document.getElementById('teamNameInput').value;
-            if (teamName) {
-                socket.emit('createParty', { teamName });
-                document.getElementById('teamNameInput').value = ''; // clear input
+            socket.emit('createParty');
+        });
+
+        // Receive available parties and display them
+        socket.on('partyOptions', (parties) => {
+            const availablePartiesList = document.getElementById('availablePartiesList');
+            availablePartiesList.innerHTML = '';
+
+            for (const partyId in parties) {
+                const partyItem = document.createElement('li');
+                partyItem.classList.add('party-item');
+                const joinButton = document.createElement('button');
+                joinButton.textContent = 'Join';
+                joinButton.onclick = () => socket.emit('joinParty', partyId);
+                partyItem.textContent = `Party: ${parties[partyId].teamName}`;
+                partyItem.appendChild(joinButton);
+                availablePartiesList.appendChild(partyItem);
             }
         });
 
-        // Display new parties
-        socket.on('partyCreated', (party) => {
-            const partyListUl = document.getElementById('partyListUl');
-            const li = document.createElement('li');
-            li.innerHTML = `${party.name} <button onclick="joinParty('${party.id}')">Join</button>`;
-            partyListUl.appendChild(li);
+        // After creating a party, hide the party options
+        socket.on('partyCreated', ({ partyId }) => {
+            document.getElementById('createPartyButton').style.display = 'none';
+            const availablePartiesList = document.getElementById('availablePartiesList');
+            availablePartiesList.innerHTML = `<li class="party-item">Your party is created. Waiting for an opponent...</li>`;
         });
 
-        // Join party function
-        function joinParty(partyId) {
-            socket.emit('joinParty', { partyId });
-        }
-
-        // Remove "Party Options" (you requested to remove this label)
+        // When a party is joined
+        socket.on('partyJoined', ({ opponentId }) => {
+            alert(`You have been paired with opponent ${opponentId}. Starting the game!`);
+            document.body.innerHTML = '<h1>Game Starting... (white screen for now)</h1>';
+        });
     </script>
 </body>
 
