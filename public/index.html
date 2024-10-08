@@ -5,43 +5,103 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Cybersecurity Multiplayer Game</title>
-    <link rel="stylesheet" href="styles.css">
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+            text-align: center;
+            padding: 50px;
+        }
+
+        h1 {
+            font-size: 2.5em;
+            color: #333;
+        }
+
+        #partyForm,
+        #partyList {
+            margin: 20px auto;
+            text-align: left;
+            width: 300px;
+        }
+
+        #partyForm input,
+        #partyForm button {
+            padding: 10px;
+            margin: 10px 0;
+            width: 100%;
+        }
+
+        #partyList ul {
+            list-style: none;
+            padding: 0;
+        }
+
+        #partyList ul li {
+            background-color: #e9e9e9;
+            padding: 10px;
+            margin-bottom: 5px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        #partyList ul li button {
+            padding: 5px 10px;
+            background-color: #28a745;
+            color: white;
+            border: none;
+            cursor: pointer;
+        }
+
+        #partyList ul li button:hover {
+            background-color: #218838;
+        }
+    </style>
 </head>
 
 <body>
-    <div class="container">
-        <h1>Welcome to the Cybersecurity Multiplayer Game</h1>
-        <p>Enter your team name to begin the battle!</p>
+    <h1>Welcome to the Cybersecurity Multiplayer Game</h1>
+    <p>Enter your team name to begin the battle!</p>
 
-        <form id="teamForm">
-            <label for="teamName">Team Name:</label>
-            <input type="text" id="teamName" name="teamName" required placeholder="Display Name">
-            <button type="submit" id="joinGameButton">Join Game</button>
-        </form>
+    <div id="partyForm">
+        <input type="text" id="teamNameInput" placeholder="Enter your team name">
+        <button id="createPartyButton">Create Party</button>
+    </div>
 
-        <div id="partyOptions" style="display:none;">
-            <h2>Party Options</h2>
-            <button id="createPartyButton">Create Party</button>
-
-            <h3>Available Parties:</h3>
-            <ul id="availablePartiesList"></ul>
-        </div>
-
-        <div id="gameActions" style="display:none;">
-            <h2>Submit Your Actions</h2>
-            <input type="text" id="attack1" placeholder="Attack 1">
-            <input type="text" id="defense1" placeholder="Defense 1">
-            <button id="submitActions">Submit Actions</button>
-        </div>
-
-        <div id="results" style="display:none;">
-            <h2>Game Results</h2>
-            <p id="resultText"></p>
-        </div>
+    <h2>Available Parties:</h2>
+    <div id="partyList">
+        <ul id="partyListUl"></ul>
     </div>
 
     <script src="/socket.io/socket.io.js"></script>
-    <script src="gameLogic.js"></script>
+    <script>
+        const socket = io();
+
+        // Party creation event
+        document.getElementById('createPartyButton').addEventListener('click', () => {
+            const teamName = document.getElementById('teamNameInput').value;
+            if (teamName) {
+                socket.emit('createParty', { teamName });
+                document.getElementById('teamNameInput').value = ''; // clear input
+            }
+        });
+
+        // Display new parties
+        socket.on('partyCreated', (party) => {
+            const partyListUl = document.getElementById('partyListUl');
+            const li = document.createElement('li');
+            li.innerHTML = `${party.name} <button onclick="joinParty('${party.id}')">Join</button>`;
+            partyListUl.appendChild(li);
+        });
+
+        // Join party function
+        function joinParty(partyId) {
+            socket.emit('joinParty', { partyId });
+        }
+
+        // Remove "Party Options" (you requested to remove this label)
+    </script>
 </body>
 
 </html>

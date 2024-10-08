@@ -20,7 +20,7 @@ socket.on('partyOptions', (parties) => {
         const joinButton = document.createElement('button');
         joinButton.textContent = 'Join Party';
         joinButton.onclick = () => socket.emit('joinParty', partyId);
-        partyItem.textContent = `Party ID: ${partyId}`;
+        partyItem.textContent = `Party: ${partyId}`;
         partyItem.appendChild(joinButton);
         availablePartiesList.appendChild(partyItem);
     }
@@ -28,24 +28,37 @@ socket.on('partyOptions', (parties) => {
 
 // Handle party creation
 document.getElementById('createPartyButton').addEventListener('click', () => {
-    socket.emit('createParty');
+    const partyName = prompt('Enter your party name:');
+    if (partyName) {
+        socket.emit('createParty', { partyName });
+    }
 });
 
 // When a party is created, hide the creation button
-socket.on('partyCreated', ({ partyId }) => {
+socket.on('partyCreated', ({ partyId, partyName }) => {
     document.getElementById('partyOptions').style.display = 'none';
-    alert(`You created a party with ID: ${partyId}. Waiting for another player.`);
+
+    // Show a UI element, no alerts
+    const partyMessage = document.getElementById('partyMessage');
+    partyMessage.innerHTML = `Party "${partyName}" created. Waiting for an opponent to join...`;
+    partyMessage.style.display = 'block';
 });
 
 // When a party is joined by an opponent
 socket.on('partyJoined', ({ opponentId }) => {
-    alert(`You have been paired with opponent ${opponentId}. The game will begin!`);
-});
-
-// Handle the game start
-socket.on('gameStart', () => {
+    document.getElementById('partyMessage').style.display = 'none';
     document.getElementById('partyOptions').style.display = 'none';
-    document.getElementById('gameActions').style.display = 'block';
+
+    // Inform user in the UI, not with alerts
+    const opponentMessage = document.getElementById('opponentMessage');
+    opponentMessage.innerHTML = `Opponent "${opponentId}" has joined. Starting the game...`;
+    opponentMessage.style.display = 'block';
+
+    // After a few seconds, begin the game
+    setTimeout(() => {
+        opponentMessage.style.display = 'none';
+        document.getElementById('gameActions').style.display = 'block';
+    }, 3000); // Wait 3 seconds before starting
 });
 
 // Handle action submission
@@ -61,4 +74,11 @@ socket.on('gameResults', (results) => {
     document.getElementById('gameActions').style.display = 'none';
     document.getElementById('results').style.display = 'block';
     document.getElementById('resultText').innerHTML = `Results:<br>Attacks: ${JSON.stringify(results.attacks)}<br>Defenses: ${JSON.stringify(results.defenses)}`;
+});
+
+// Handle opponent disconnection
+socket.on('opponentLeft', () => {
+    document.getElementById('gameActions').style.display = 'none';
+    document.getElementById('results').style.display = 'block';
+    document.getElementById('resultText').innerHTML = 'Your opponent left the game. You win!';
 });
