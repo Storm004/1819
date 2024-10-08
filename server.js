@@ -80,6 +80,9 @@ io.on('connection', (socket) => {
 });
 
 // Start the server on port 3000
-server.listen(3000, () => {
-    console.log('Server is running on port 3000');
+// Use the port provided by Heroku or default to 3000 for local development
+const port = process.env.PORT || 3000;
+server.listen(port, () => {
+    console.log(`Server is running on port ${port}`);
 });
+
