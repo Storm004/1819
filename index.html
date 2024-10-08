@@ -1,208 +1,74 @@
-<<<<<<< HEAD
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Cybersecurity Game</title>
-    <link rel="stylesheet" href="styles.css">
+    <title>Cybersecurity Multiplayer Game</title>
+    <link rel="stylesheet" href="styles.css"> <!-- Link to your CSS file -->
 </head>
 <body>
-    <!-- Navigation Bar -->
-    <nav>
-        <a href="houseMap.html">House Map</a> | 
-        <a href="pointsKey.html">Points System Key</a> | 
-        <a href="index.html">Game Page</a>
-    </nav>
+    <div class="container">
+        <h1>Welcome to the Cybersecurity Multiplayer Game</h1>
+        <p>Enter your team name to begin the battle!</p>
 
-    <h1>Cybersecurity Game</h1>
+        <form id="teamForm">
+            <label for="teamName">Team Name:</label>
+            <input type="text" id="teamName" name="teamName" required placeholder="Enter your team name">
+            <button type="submit" id="joinGameButton">Join Game</button>
+        </form>
 
-    <div id="game-area">
-        <h2>Team 1 - Attacks</h2>
-        <input type="text" id="team1Attack1" placeholder="Attack 1">
-        <input type="text" id="team1Attack2" placeholder="Attack 2">
-        <input type="text" id="team1Attack3" placeholder="Attack 3">
+        <div id="gameActions" style="display:none;">
+            <h2>Submit Your Actions</h2>
+            <input type="text" id="attack1" placeholder="Attack 1">
+            <input type="text" id="defense1" placeholder="Defense 1">
+            <button id="submitActions">Submit Actions</button>
+        </div>
 
-        <h2>Team 1 - Defenses</h2>
-        <input type="text" id="team1Defense1" placeholder="Defense 1">
-        <input type="text" id="team1Defense2" placeholder="Defense 2">
-        <input type="text" id="team1Defense3" placeholder="Defense 3">
-
-        <h2>Team 2 - Attacks</h2>
-        <input type="text" id="team2Attack1" placeholder="Attack 1">
-        <input type="text" id="team2Attack2" placeholder="Attack 2">
-        <input type="text" id="team2Attack3" placeholder="Attack 3">
-
-        <h2>Team 2 - Defenses</h2>
-        <input type="text" id="team2Defense1" placeholder="Defense 1">
-        <input type="text" id="team2Defense2" placeholder="Defense 2">
-        <input type="text" id="team2Defense3" placeholder="Defense 3">
-
-        <br><br>
-        <button onclick="determineWinner()">Submit</button>
-
-        <h2>Results:</h2>
-        <p id="winner">Winner: </p>
-        <p id="team1Points">Team 1 Points: </p>
-        <p id="team2Points">Team 2 Points: </p>
-
-        <!-- Team 1 broken and defended rooms -->
-        <p id="team1BrokenRooms">Team 1 broke into: </p>
-        <p id="team1DefendedRooms">Team 1 defended: </p>
-
-        <!-- Team 2 broken and defended rooms -->
-        <p id="team2BrokenRooms">Team 2 broke into: </p>
-        <p id="team2DefendedRooms">Team 2 defended: </p>
+        <div id="results" style="display:none;">
+            <h2>Game Results</h2>
+            <p id="resultText"></p>
+        </div>
     </div>
 
+    <script src="/socket.io/socket.io.js"></script>
     <script>
-        const attackDefenseKey = {
-            A: { attacks: ["DDoS", "Brute Force"], defenses: ["Load Balancing", "MFA"], room: "Main Server", points: 10 },
-            B: { attacks: ["SQL Injection", "Data Breach"], defenses: ["Encryption", "Input Validation"], room: "Database", points: 8 },
-            C: { attacks: ["Man-in-the-Middle", "Spoofing"], defenses: ["Packet Filtering", "Intrusion Detection"], room: "Router (Main Bedroom)", points: 7 },
-            D: { attacks: ["Phishing", "Malware Injection"], defenses: ["MFA", "Email Filtering"], room: "Email Server", points: 6 },
-            E: { attacks: ["Ransomware", "Data Destruction"], defenses: ["Regular Backups", "Encryption"], room: "Backup Server", points: 5 },
-            F: { attacks: ["Brute Force", "Packet Sniffing"], defenses: ["MFA", "Packet Filtering"], room: "Access Control Systems (Bathrooms)", points: 2 },
-            G: { attacks: ["Packet Sniffing", "Data Interception"], defenses: ["Packet Filtering", "Intrusion Detection"], room: "Network Segments/Hallways", points: 3 },
-            H: { attacks: ["Information Leakage", "Backdoors"], defenses: ["Limited Access", "Logging"], room: "Low-Value Storage", points: 2 },
-            I: { attacks: ["Credential Stuffing", "Spear Phishing"], defenses: ["MFA", "Strong Password Policies"], room: "Entry Points (Doors)", points: 3 }
-        };
+        const socket = io();
+        document.getElementById('teamForm').addEventListener('submit', (event) => {
+            event.preventDefault();
+            const teamName = document.getElementById('teamName').value;
 
-        function determineWinner() {
-            let team1AttackPoints = 0;
-            let team2AttackPoints = 0;
-            let team1DefensePoints = 0;
-            let team2DefensePoints = 0;
+            // Emit the team name and join the game
+            socket.emit('joinGame', { teamName });
+        });
 
-            let team1BrokenRooms = [];
-            let team2BrokenRooms = [];
-            let team1DefendedRooms = [];
-            let team2DefendedRooms = [];
+        socket.on('waitingForOpponent', () => {
+            alert('Waiting for an opponent to join...');
+        });
 
-            // Team 1 Inputs
-            let team1Attacks = [
-                document.getElementById("team1Attack1").value,
-                document.getElementById("team1Attack2").value,
-                document.getElementById("team1Attack3").value
-            ];
-            let team1Defenses = [
-                document.getElementById("team1Defense1").value,
-                document.getElementById("team1Defense2").value,
-                document.getElementById("team1Defense3").value
-            ];
+        socket.on('paired', ({ opponentId, gameId }) => {
+            alert(`Paired with opponent ${opponentId}.`);
+            document.getElementById('gameActions').style.display = 'block';
+        });
 
-            // Team 2 Inputs
-            let team2Attacks = [
-                document.getElementById("team2Attack1").value,
-                document.getElementById("team2Attack2").value,
-                document.getElementById("team2Attack3").value
-            ];
-            let team2Defenses = [
-                document.getElementById("team2Defense1").value,
-                document.getElementById("team2Defense2").value,
-                document.getElementById("team2Defense3").value
-            ];
-
-            // Logic to check attacks and defenses for each room
-            Object.keys(attackDefenseKey).forEach(letter => {
-                let room = attackDefenseKey[letter].room;
-                let possibleAttacks = attackDefenseKey[letter].attacks;
-                let possibleDefenses = attackDefenseKey[letter].defenses;
-                let points = attackDefenseKey[letter].points;
-
-                // Team 1 attacking Team 2 rooms
-                let team1BrokeIn = false;
-                team1Attacks.forEach(attack => {
-                    if (possibleAttacks.includes(attack) && !team2Defenses.some(defense => possibleDefenses.includes(defense))) {
-                        team1AttackPoints += points;
-                        team1BrokenRooms.push(room);
-                        team1BrokeIn = true;
-                    }
-                });
-                if (!team1BrokeIn) {
-                    team2DefensePoints += points;
-                    team2DefendedRooms.push(room);
-                }
-
-                // Team 2 attacking Team 1 rooms
-                let team2BrokeIn = false;
-                team2Attacks.forEach(attack => {
-                    if (possibleAttacks.includes(attack) && !team1Defenses.some(defense => possibleDefenses.includes(defense))) {
-                        team2AttackPoints += points;
-                        team2BrokenRooms.push(room);
-                        team2BrokeIn = true;
-                    }
-                });
-                if (!team2BrokeIn) {
-                    team1DefensePoints += points;
-                    team1DefendedRooms.push(room);
+        document.getElementById('submitActions').addEventListener('click', () => {
+            const attack1 = document.getElementById('attack1').value;
+            const defense1 = document.getElementById('defense1').value;
+            socket.emit('submitActions', {
+                actions: {
+                    attacks: [attack1],
+                    defenses: [defense1]
                 }
             });
+        });
 
-            // Display the results
-            document.getElementById("team1Points").innerHTML = `Team 1 Attack Points: ${team1AttackPoints}, Defense Points: ${team1DefensePoints}`;
-            document.getElementById("team2Points").innerHTML = `Team 2 Attack Points: ${team2AttackPoints}, Defense Points: ${team2DefensePoints}`;
+        socket.on('gameResults', ({ attacks, defenses }) => {
+            document.getElementById('resultText').innerHTML = `Attacks: ${JSON.stringify(attacks)}<br>Defenses: ${JSON.stringify(defenses)}`;
+            document.getElementById('results').style.display = 'block';
+        });
 
-            let winnerText = (team1AttackPoints + team1DefensePoints) > (team2AttackPoints + team2DefensePoints) ? "Team 1 Wins!" : 
-                             (team1AttackPoints + team1DefensePoints) < (team2AttackPoints + team2DefensePoints) ? "Team 2 Wins!" : "It's a Draw!";
-            document.getElementById("winner").innerHTML = "Winner: " + winnerText;
-
-            // Display broken and defended rooms
-            document.getElementById("team1BrokenRooms").innerHTML = "Team 1 broke into: " + (team1BrokenRooms.length ? team1BrokenRooms.join(', ') : "No rooms");
-            document.getElementById("team1DefendedRooms").innerHTML = "Team 1 defended: " + (team1DefendedRooms.length ? team1DefendedRooms.join(', ') : "No rooms");
-
-            document.getElementById("team2BrokenRooms").innerHTML = "Team 2 broke into: " + (team2BrokenRooms.length ? team2BrokenRooms.join(', ') : "No rooms");
-            document.getElementById("team2DefendedRooms").innerHTML = "Team 2 defended: " + (team2DefendedRooms.length ? team2DefendedRooms.join(', ') : "No rooms");
-        }
+        socket.on('opponentLeft', () => {
+            alert('Your opponent left the game.');
+        });
     </script>
 </body>
 </html>
-=======
-<!DOCTYPE html>
-<html lang="en">
-
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Cybersecurity Game</title>
-    <link rel="stylesheet" href="styles.css">
-</head>
-
-<body>
-    <h1>Cybersecurity Game</h1>
-
-    <div id="game-area">
-        <h2>Team 1 - Attacks</h2>
-        <input type="text" id="team1Attack1" placeholder="Attack 1">
-        <input type="text" id="team1Attack2" placeholder="Attack 2">
-        <input type="text" id="team1Attack3" placeholder="Attack 3">
-
-        <h2>Team 1 - Defenses</h2>
-        <input type="text" id="team1Defense1" placeholder="Defense 1">
-        <input type="text" id="team1Defense2" placeholder="Defense 2">
-        <input type="text" id="team1Defense3" placeholder="Defense 3">
-
-        <h2>Team 2 - Attacks</h2>
-        <input type="text" id="team2Attack1" placeholder="Attack 1">
-        <input type="text" id="team2Attack2" placeholder="Attack 2">
-        <input type="text" id="team2Attack3" placeholder="Attack 3">
-
-        <h2>Team 2 - Defenses</h2>
-        <input type="text" id="team2Defense1" placeholder="Defense 1">
-        <input type="text" id="team2Defense2" placeholder="Defense 2">
-        <input type="text" id="team2Defense3" placeholder="Defense 3">
-
-        <br><br>
-        <button onclick="determineWinner()">Submit</button>
-
-        <h2>Results:</h2>
-        <p id="winner">Winner: </p>
-        <p id="team1Points">Team 1 Points: </p>
-        <p id="team2Points">Team 2 Points: </p>
-    </div>
-
-    <script src="gameLogic.js"></script>
-</body>
-
-</html>
->>>>>>> ebd3743 (Initial commit)
