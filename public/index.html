@@ -75,8 +75,9 @@
     <script src="/socket.io/socket.io.js"></script>
     <script>
         const socket = io();
+        let myPartyId = null;
 
-        // Handle team name submission
+        // Handle the team name submission
         document.getElementById('teamForm').addEventListener('submit', (event) => {
             event.preventDefault();
             const teamName = document.getElementById('teamName').value;
@@ -100,7 +101,14 @@
                 partyItem.classList.add('party-item');
                 const joinButton = document.createElement('button');
                 joinButton.textContent = 'Join';
-                joinButton.onclick = () => socket.emit('joinParty', partyId);
+
+                // Prevent user from joining their own party
+                if (partyId !== myPartyId) {
+                    joinButton.onclick = () => socket.emit('joinParty', partyId);
+                } else {
+                    joinButton.disabled = true;
+                }
+
                 partyItem.textContent = `Party: ${parties[partyId].teamName}`;
                 partyItem.appendChild(joinButton);
                 availablePartiesList.appendChild(partyItem);
@@ -108,103 +116,27 @@
         });
 
         // After creating a party, hide the party options
-        socket.on('partyCreated', ({ partyId }) => {
-            document.getElementById('createPartyButton').style.display = 'none';
+        socket.on('partyCreated', ({ partyId, teamName }) => {
+            myPartyId = partyId; // Store the party ID to prevent self-joining
             const availablePartiesList = document.getElementById('availablePartiesList');
-            availablePartiesList.innerHTML = `<li class="party-item">Your party is created. Waiting for an opponent...</li>`;
+            const partyItem = document.createElement('li');
+            partyItem.classList.add('party-item');
+            partyItem.textContent = `Party: ${teamName}`;
+
+            const joinButton = document.createElement('button');
+            joinButton.textContent = 'Join Party';
+            joinButton.disabled = true; // Disable join button for own party
+
+            partyItem.appendChild(joinButton);
+            availablePartiesList.appendChild(partyItem);
         });
 
         // When a party is joined
         socket.on('partyJoined', ({ opponentId }) => {
-            alert(`You have been paired with opponent ${opponentId}. Starting the game!`);
-            document.body.innerHTML = '<h1>Game Starting... (white screen for now)</h1>';
+            document.getElementById('partyOptions').style.display = 'none';
+            document.body.innerHTML = `<h1>Game Starting... (white screen for now)</h1>`;
         });
     </script>
 </body>
 
 </html>
-const socket = io();
-let myPartyId = null;
-
-// Handle the team name submission
-document.getElementById('teamForm').addEventListener('submit', (event) => {
-event.preventDefault();
-const teamName = document.getElementById('teamName').value;
-socket.emit('enterGame', teamName);
-});
-
-// Receive party options after entering the game
-socket.on('partyOptions', (parties) => {
-document.getElementById('teamForm').style.display = 'none';
-document.getElementById('partyOptions').style.display = 'block';
-
-const availablePartiesList = document.getElementById('availablePartiesList');
-availablePartiesList.innerHTML = '';
-
-for (const partyId in parties) {
-const partyItem = document.createElement('li');
-const joinButton = document.createElement('button');
-joinButton.textContent = 'Join Party';
-
-// Prevent user from joining their own party
-if (partyId !== myPartyId) {
-joinButton.onclick = () => socket.emit('joinParty', partyId);
-} else {
-joinButton.disabled = true;
-}
-
-partyItem.textContent = `Party: ${parties[partyId]}`;
-partyItem.appendChild(joinButton);
-availablePartiesList.appendChild(partyItem);
-}
-});
-
-// Handle party creation
-document.getElementById('createPartyButton').addEventListener('click', () => {
-socket.emit('createParty');
-});
-
-// When a party is created, display it in the list and store the party ID
-socket.on('partyCreated', ({ partyId, teamName }) => {
-myPartyId = partyId; // Store the party ID to prevent self-joining
-const availablePartiesList = document.getElementById('availablePartiesList');
-const partyItem = document.createElement('li');
-partyItem.textContent = `Party: ${teamName}`;
-
-const joinButton = document.createElement('button');
-joinButton.textContent = 'Join Party';
-joinButton.disabled = true; // Disable join button for own party
-
-partyItem.appendChild(joinButton);
-availablePartiesList.appendChild(partyItem);
-});
-
-// When a party is joined by an opponent
-socket.on('partyJoined', ({ opponentId }) => {
-// Remove popups and directly show in the game UI
-document.getElementById('partyOptions').style.display = 'none';
-document.getElementById('statusMessage').textContent = `You have been paired with opponent ${opponentId}. The game will
-begin!`;
-});
-
-// Handle the game start
-socket.on('gameStart', () => {
-document.getElementById('partyOptions').style.display = 'none';
-document.getElementById('gameActions').style.display = 'block';
-});
-
-// Handle action submission
-document.getElementById('submitActions').addEventListener('click', () => {
-const attack1 = document.getElementById('attack1').value;
-const defense1 = document.getElementById('defense1').value;
-const actions = { attacks: [attack1], defenses: [defense1] };
-socket.emit('submitActions', actions);
-});
-
-// Show game results
-socket.on('gameResults', (results) => {
-document.getElementById('gameActions').style.display = 'none';
-document.getElementById('results').style.display = 'block';
-document.getElementById('resultText').innerHTML = `Results:<br>Attacks: ${JSON.stringify(results.attacks)}<br>Defenses:
-${JSON.stringify(results.defenses)}`;
-});
