@@ -5,6 +5,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Cybersecurity Multiplayer Game</title>
+    <link rel="stylesheet" href="styles.css">
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -12,6 +13,16 @@
             background-color: #f4f4f4;
             margin: 0;
             padding: 0;
+        }
+
+        nav {
+            margin: 20px 0;
+        }
+
+        nav a {
+            margin: 0 15px;
+            text-decoration: none;
+            color: #333;
         }
 
         h1 {
@@ -55,6 +66,13 @@
 </head>
 
 <body>
+    <!-- Navigation Bar -->
+    <nav>
+        <a href="index.html">Game Page</a> |
+        <a href="houseMap.html">House Map</a> |
+        <a href="pointsKey.html">Points System Key</a>
+    </nav>
+
     <h1>Welcome to the Cybersecurity Multiplayer Game</h1>
     <p id="instructions">Enter your team name to begin the battle!</p>
 
@@ -82,25 +100,20 @@
             event.preventDefault();
             const teamName = document.getElementById('teamName').value;
             socket.emit('enterGame', teamName);
+        });
+
+        // Receive party options after entering the game
+        socket.on('partyOptions', (parties) => {
             document.getElementById('teamForm').style.display = 'none';
             document.getElementById('partyOptions').style.display = 'block';
-        });
 
-        // Create Party button event
-        document.getElementById('createPartyButton').addEventListener('click', () => {
-            socket.emit('createParty');
-        });
-
-        // Receive available parties and display them
-        socket.on('partyOptions', (parties) => {
             const availablePartiesList = document.getElementById('availablePartiesList');
             availablePartiesList.innerHTML = '';
 
             for (const partyId in parties) {
                 const partyItem = document.createElement('li');
-                partyItem.classList.add('party-item');
                 const joinButton = document.createElement('button');
-                joinButton.textContent = 'Join';
+                joinButton.textContent = 'Join Party';
 
                 // Prevent user from joining their own party
                 if (partyId !== myPartyId) {
@@ -109,18 +122,22 @@
                     joinButton.disabled = true;
                 }
 
-                partyItem.textContent = `Party: ${parties[partyId].teamName}`;
+                partyItem.textContent = `Party: ${parties[partyId]}`;
                 partyItem.appendChild(joinButton);
                 availablePartiesList.appendChild(partyItem);
             }
         });
 
-        // After creating a party, hide the party options
+        // Handle party creation
+        document.getElementById('createPartyButton').addEventListener('click', () => {
+            socket.emit('createParty');
+        });
+
+        // When a party is created, display it in the list and store the party ID
         socket.on('partyCreated', ({ partyId, teamName }) => {
             myPartyId = partyId; // Store the party ID to prevent self-joining
             const availablePartiesList = document.getElementById('availablePartiesList');
             const partyItem = document.createElement('li');
-            partyItem.classList.add('party-item');
             partyItem.textContent = `Party: ${teamName}`;
 
             const joinButton = document.createElement('button');
@@ -131,10 +148,32 @@
             availablePartiesList.appendChild(partyItem);
         });
 
-        // When a party is joined
+        // When a party is joined by an opponent
         socket.on('partyJoined', ({ opponentId }) => {
+            // Remove popups and directly show in the game UI
             document.getElementById('partyOptions').style.display = 'none';
-            document.body.innerHTML = `<h1>Game Starting... (white screen for now)</h1>`;
+            document.body.innerHTML = `<h1>You have been paired with opponent ${opponentId}. The game will begin!</h1>`;
+        });
+
+        // Handle the game start
+        socket.on('gameStart', () => {
+            document.getElementById('partyOptions').style.display = 'none';
+            document.getElementById('gameActions').style.display = 'block';
+        });
+
+        // Handle action submission
+        document.getElementById('submitActions').addEventListener('click', () => {
+            const attack1 = document.getElementById('attack1').value;
+            const defense1 = document.getElementById('defense1').value;
+            const actions = { attacks: [attack1], defenses: [defense1] };
+            socket.emit('submitActions', actions);
+        });
+
+        // Show game results
+        socket.on('gameResults', (results) => {
+            document.getElementById('gameActions').style.display = 'none';
+            document.getElementById('results').style.display = 'block';
+            document.getElementById('resultText').innerHTML = `Results:<br>Attacks: ${JSON.stringify(results.attacks)}<br>Defenses: ${JSON.stringify(results.defenses)}`;
         });
     </script>
 </body>

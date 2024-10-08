@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cybersecurity Game - Attack Room</title>
+    <link rel="stylesheet" href="styles.css">
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            background-color: #f4f4f4;
+            margin: 0;
+            padding: 0;
+        }
+
+        .game-section {
+            margin: 20px auto;
+            max-width: 800px;
+        }
+
+        input[type="text"],
+        button {
+            padding: 10px;
+            margin: 5px;
+            font-size: 16px;
+        }
+
+        .attacks,
+        .defenses {
+            margin-bottom: 20px;
+        }
+
+        .game-results {
+            display: none;
+            margin-top: 20px;
+        }
+
+        .game-results p {
+            font-size: 20px;
+            font-weight: bold;
+        }
+    </style>
+</head>
+
+<body>
+
+    <!-- Navigation Bar -->
+    <nav>
+        <a href="index.html">Game Page</a> |
+        <a href="houseMap.html">House Map</a> |
+        <a href="pointsKey.html">Points System Key</a>
+    </nav>
+
+    <h1>Attack Room</h1>
+    <p>Enter your 3 attacks and 3 defenses, then click "Done" when ready.</p>
+
+    <!-- Attack Section -->
+    <div class="game-section">
+        <div class="attacks">
+            <h2>Your Attacks</h2>
+            <input type="text" id="attack1" placeholder="Attack 1">
+            <input type="text" id="attack2" placeholder="Attack 2">
+            <input type="text" id="attack3" placeholder="Attack 3">
+        </div>
+
+        <!-- Defense Section -->
+        <div class="defenses">
+            <h2>Your Defenses</h2>
+            <input type="text" id="defense1" placeholder="Defense 1">
+            <input type="text" id="defense2" placeholder="Defense 2">
+            <input type="text" id="defense3" placeholder="Defense 3">
+        </div>
+
+        <!-- Done Button -->
+        <button id="doneButton">Done</button>
+    </div>
+
+    <!-- Game Results -->
+    <div class="game-results" id="gameResults">
+        <h2>Game Results</h2>
+        <p id="resultsText"></p>
+    </div>
+
+    <script src="/socket.io/socket.io.js"></script>
+    <script>
+        const socket = io();
+
+        document.getElementById('doneButton').addEventListener('click', () => {
+            const attack1 = document.getElementById('attack1').value;
+            const attack2 = document.getElementById('attack2').value;
+            const attack3 = document.getElementById('attack3').value;
+            const defense1 = document.getElementById('defense1').value;
+            const defense2 = document.getElementById('defense2').value;
+            const defense3 = document.getElementById('defense3').value;
+
+            const actions = {
+                attacks: [attack1, attack2, attack3],
+                defenses: [defense1, defense2, defense3]
+            };
+
+            socket.emit('submitActions', actions);
+        });
+
+        // Listen for game results
+        socket.on('gameResults', (results) => {
+            document.getElementById('gameResults').style.display = 'block';
+            const resultsText = document.getElementById('resultsText');
+            resultsText.innerHTML = `
+                Attacks: ${JSON.stringify(results.attacks)} <br>
+                Defenses: ${JSON.stringify(results.defenses)} <br>
+                Your Points: ${results.yourPoints} <br>
+                Opponent's Points: ${results.opponentPoints} <br>
+                ${results.winner} Wins!
+            `;
+        });
+    </script>
+</body>
+
+</html>

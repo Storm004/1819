@@ -1,84 +1,57 @@
-const socket = io();
+const express = require('express');
+const http = require('http');
+const { Server } = require('socket.io');
+const app = express();
+const server = http.createServer(app);
+const io = new Server(server);
 
-// Handle the team name submission
-document.getElementById('teamForm').addEventListener('submit', (event) => {
-    event.preventDefault();
-    const teamName = document.getElementById('teamName').value;
-    socket.emit('enterGame', teamName);
+let waitingPlayers = [];
+let activeGames = {};
+const pointSystem = {
+    A: 10, B: 8, C: 7, D: 6, E: 5, F: 2, G: 3, H: 2, I: 3
+};
+
+// Serve static files
+app.use(express.static('public'));
+
+io.on('connection', (socket) => {
+    console.log('Player connected:', socket.id);
+
+    socket.on('submitActions', ({ attacks, defenses }) => {
+        const game = activeGames[socket.id];
+        if (game) {
+            game.attacks[socket.id] = attacks;
+            game.defenses[socket.id] = defenses;
+
+            if (Object.keys(game.attacks).length === 2 && Object.keys(game.defenses).length === 2) {
+                const result = calculateResults(game);
+                io.to(game.players[0]).emit('gameResults', result);
+                io.to(game.players[1]).emit('gameResults', result);
+
+                // Clean up after the game ends
+                delete activeGames[game.id];
+            }
+        }
+    });
+
+    // More server logic (handling pairing, game setup, etc.)
 });
 
-// Receive party options after entering the game
-socket.on('partyOptions', (parties) => {
-    document.getElementById('teamForm').style.display = 'none';
-    document.getElementById('partyOptions').style.display = 'block';
+// Function to calculate the game results
+function calculateResults(game) {
+    let yourPoints = 0;
+    let opponentPoints = 0;
 
-    const availablePartiesList = document.getElementById('availablePartiesList');
-    availablePartiesList.innerHTML = '';
+    // Example logic: compare attacks and defenses
+    // Adjust as per your game rules
 
-    for (const partyId in parties) {
-        const partyItem = document.createElement('li');
-        const joinButton = document.createElement('button');
-        joinButton.textContent = 'Join Party';
-        joinButton.onclick = () => socket.emit('joinParty', partyId);
-        partyItem.textContent = `Party: ${partyId}`;
-        partyItem.appendChild(joinButton);
-        availablePartiesList.appendChild(partyItem);
-    }
-});
+    // Declare the winner based on points
+    const winner = yourPoints > opponentPoints ? 'You' : 'Opponent';
+    return { attacks: game.attacks, defenses: game.defenses, yourPoints, opponentPoints, winner };
+}
 
-// Handle party creation
-document.getElementById('createPartyButton').addEventListener('click', () => {
-    const partyName = prompt('Enter your party name:');
-    if (partyName) {
-        socket.emit('createParty', { partyName });
-    }
-});
-
-// When a party is created, hide the creation button
-socket.on('partyCreated', ({ partyId, partyName }) => {
-    document.getElementById('partyOptions').style.display = 'none';
-
-    // Show a UI element, no alerts
-    const partyMessage = document.getElementById('partyMessage');
-    partyMessage.innerHTML = `Party "${partyName}" created. Waiting for an opponent to join...`;
-    partyMessage.style.display = 'block';
-});
-
-// When a party is joined by an opponent
-socket.on('partyJoined', ({ opponentId }) => {
-    document.getElementById('partyMessage').style.display = 'none';
-    document.getElementById('partyOptions').style.display = 'none';
-
-    // Inform user in the UI, not with alerts
-    const opponentMessage = document.getElementById('opponentMessage');
-    opponentMessage.innerHTML = `Opponent "${opponentId}" has joined. Starting the game...`;
-    opponentMessage.style.display = 'block';
-
-    // After a few seconds, begin the game
-    setTimeout(() => {
-        opponentMessage.style.display = 'none';
-        document.getElementById('gameActions').style.display = 'block';
-    }, 3000); // Wait 3 seconds before starting
-});
-
-// Handle action submission
-document.getElementById('submitActions').addEventListener('click', () => {
-    const attack1 = document.getElementById('attack1').value;
-    const defense1 = document.getElementById('defense1').value;
-    const actions = { attacks: [attack1], defenses: [defense1] };
-    socket.emit('submitActions', actions);
-});
-
-// Show game results
-socket.on('gameResults', (results) => {
-    document.getElementById('gameActions').style.display = 'none';
-    document.getElementById('results').style.display = 'block';
-    document.getElementById('resultText').innerHTML = `Results:<br>Attacks: ${JSON.stringify(results.attacks)}<br>Defenses: ${JSON.stringify(results.defenses)}`;
-});
-
-// Handle opponent disconnection
-socket.on('opponentLeft', () => {
-    document.getElementById('gameActions').style.display = 'none';
-    document.getElementById('results').style.display = 'block';
-    document.getElementById('resultText').innerHTML = 'Your opponent left the game. You win!';
+// Start the server
+const port = process.env.PORT || 3000;
+server.listen(port, () => {
+    console.log(`Server running on port ${port}`);
 });
