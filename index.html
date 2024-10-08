@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cybersecurity Multiplayer Game</title>
+</head>
+<body>
+    <h1>Welcome to the Cybersecurity Multiplayer Game</h1>
+    <p>Enter your team name to begin the battle!</p>
+
+    <form id="teamForm">
+        <label for="teamName">Team Name:</label>
+        <input type="text" id="teamName" name="teamName" required placeholder="Enter your team name">
+        <button type="submit" id="joinGameButton">Join Game</button>
+    </form>
+
+    <div id="gameActions" style="display:none;">
+        <h2>Submit Your Actions</h2>
+        <input type="text" id="attack1" placeholder="Attack 1">
+        <input type="text" id="defense1" placeholder="Defense 1">
+        <button id="submitActions">Submit Actions</button>
+    </div>
+
+    <div id="results" style="display:none;">
+        <h2>Game Results</h2>
+        <p id="resultText"></p>
+    </div>
+
+    <script src="/socket.io/socket.io.js"></script>
+    <script>
+        const socket = io();
+
+        document.getElementById('joinGameButton').addEventListener('click', (e) => {
+            e.preventDefault();
+            const teamName = document.getElementById('teamName').value;
+            if (teamName) {
+                socket.emit('joinGame', { teamName });
+                document.getElementById('teamForm').style.display = 'none';
+                document.getElementById('gameActions').style.display = 'block';
+            } else {
+                alert("Please enter a team name!");
+            }
+        });
+
+        socket.on('waitingForOpponent', () => {
+            alert('Waiting for an opponent to join...');
+        });
+
+        socket.on('paired', ({ opponentId, gameId }) => {
+            alert(`Paired with opponent ${opponentId}.`);
+        });
+
+        document.getElementById('submitActions').addEventListener('click', () => {
+            const attack1 = document.getElementById('attack1').value;
+            const defense1 = document.getElementById('defense1').value;
+            socket.emit('submitActions', {
+                actions: {
+                    attacks: [attack1],
+                    defenses: [defense1]
+                }
+            });
+        });
+
+        socket.on('gameResults', ({ attacks, defenses }) => {
+            document.getElementById('resultText').innerHTML = `Attacks: ${JSON.stringify(attacks)}<br>Defenses: ${JSON.stringify(defenses)}`;
+            document.getElementById('results').style.display = 'block';
+        });
+
+        socket.on('opponentLeft', () => {
+            alert('Your opponent left the game.');
+        });
+    </script>
+</body>
+</html>
