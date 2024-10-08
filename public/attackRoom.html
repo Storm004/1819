@@ -4,115 +4,110 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Cybersecurity Game - Attack Room</title>
-    <link rel="stylesheet" href="styles.css">
+    <title>Attack Room</title>
     <style>
         body {
             font-family: Arial, sans-serif;
             text-align: center;
             background-color: #f4f4f4;
-            margin: 0;
-            padding: 0;
         }
 
-        .game-section {
-            margin: 20px auto;
-            max-width: 800px;
+        h1 {
+            margin-top: 50px;
         }
 
-        input[type="text"],
-        button {
+        form {
+            margin-top: 30px;
+        }
+
+        input[type="text"] {
             padding: 10px;
-            margin: 5px;
-            font-size: 16px;
+            width: 300px;
+            margin: 10px 0;
         }
 
-        .attacks,
-        .defenses {
-            margin-bottom: 20px;
-        }
-
-        .game-results {
-            display: none;
+        button {
+            background-color: #28a745;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            cursor: pointer;
+            border-radius: 5px;
             margin-top: 20px;
         }
 
-        .game-results p {
-            font-size: 20px;
-            font-weight: bold;
+        nav {
+            margin: 20px 0;
+        }
+
+        nav a {
+            margin: 0 10px;
+            text-decoration: none;
+            color: #007bff;
+        }
+
+        nav a:hover {
+            text-decoration: underline;
         }
     </style>
 </head>
 
 <body>
+    <h1>Choose Your Attacks and Defenses</h1>
 
-    <!-- Navigation Bar -->
+    <!-- Navigation to house map and points system -->
     <nav>
-        <a href="index.html">Game Page</a> |
-        <a href="houseMap.html">House Map</a> |
-        <a href="pointsKey.html">Points System Key</a>
+        <a href="houseMap.html" target="_blank">House Map</a> |
+        <a href="pointsKey.html" target="_blank">Points System Key</a>
     </nav>
 
-    <h1>Attack Room</h1>
-    <p>Enter your 3 attacks and 3 defenses, then click "Done" when ready.</p>
+    <form id="attackForm">
+        <h3>Attacks:</h3>
+        <input type="text" id="attack1" placeholder="Enter Attack 1" required><br>
+        <input type="text" id="attack2" placeholder="Enter Attack 2" required><br>
+        <input type="text" id="attack3" placeholder="Enter Attack 3" required><br>
 
-    <!-- Attack Section -->
-    <div class="game-section">
-        <div class="attacks">
-            <h2>Your Attacks</h2>
-            <input type="text" id="attack1" placeholder="Attack 1">
-            <input type="text" id="attack2" placeholder="Attack 2">
-            <input type="text" id="attack3" placeholder="Attack 3">
-        </div>
+        <h3>Defenses:</h3>
+        <input type="text" id="defense1" placeholder="Enter Defense 1" required><br>
+        <input type="text" id="defense2" placeholder="Enter Defense 2" required><br>
+        <input type="text" id="defense3" placeholder="Enter Defense 3" required><br>
 
-        <!-- Defense Section -->
-        <div class="defenses">
-            <h2>Your Defenses</h2>
-            <input type="text" id="defense1" placeholder="Defense 1">
-            <input type="text" id="defense2" placeholder="Defense 2">
-            <input type="text" id="defense3" placeholder="Defense 3">
-        </div>
-
-        <!-- Done Button -->
-        <button id="doneButton">Done</button>
-    </div>
-
-    <!-- Game Results -->
-    <div class="game-results" id="gameResults">
-        <h2>Game Results</h2>
-        <p id="resultsText"></p>
-    </div>
+        <button type="submit">Submit Actions</button>
+    </form>
 
     <script src="/socket.io/socket.io.js"></script>
     <script>
         const socket = io();
 
-        document.getElementById('doneButton').addEventListener('click', () => {
+        // Handle form submission of attacks and defenses
+        document.getElementById('attackForm').addEventListener('submit', (event) => {
+            event.preventDefault();
+
             const attack1 = document.getElementById('attack1').value;
             const attack2 = document.getElementById('attack2').value;
             const attack3 = document.getElementById('attack3').value;
+
             const defense1 = document.getElementById('defense1').value;
             const defense2 = document.getElementById('defense2').value;
             const defense3 = document.getElementById('defense3').value;
 
-            const actions = {
+            // Send selected actions to the server
+            socket.emit('submitActions', {
                 attacks: [attack1, attack2, attack3],
                 defenses: [defense1, defense2, defense3]
-            };
+            });
 
-            socket.emit('submitActions', actions);
+            // Show message after submission
+            alert('Actions submitted! Waiting for results...');
         });
 
-        // Listen for game results
+        // Listen for game results from the server
         socket.on('gameResults', (results) => {
-            document.getElementById('gameResults').style.display = 'block';
-            const resultsText = document.getElementById('resultsText');
-            resultsText.innerHTML = `
-                Attacks: ${JSON.stringify(results.attacks)} <br>
-                Defenses: ${JSON.stringify(results.defenses)} <br>
-                Your Points: ${results.yourPoints} <br>
-                Opponent's Points: ${results.opponentPoints} <br>
-                ${results.winner} Wins!
+            document.body.innerHTML = `
+                <h1>Game Results</h1>
+                <p><strong>Your Attacks:</strong> ${JSON.stringify(results.attacks)}</p>
+                <p><strong>Your Defenses:</strong> ${JSON.stringify(results.defenses)}</p>
+                <p><strong>Winner:</strong> ${results.winner}</p>
             `;
         });
     </script>

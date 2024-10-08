@@ -77,7 +77,7 @@
         const socket = io();
         let myPartyId = null;
 
-        // Handle the team name submission
+        // Handle team name submission
         document.getElementById('teamForm').addEventListener('submit', (event) => {
             event.preventDefault();
             const teamName = document.getElementById('teamName').value;
@@ -115,17 +115,24 @@
             }
         });
 
-        // After creating a party, hide the creation button
-        socket.on('partyCreated', ({ partyId }) => {
+        // After creating a party, display it in the list and store the party ID
+        socket.on('partyCreated', ({ partyId, teamName }) => {
             myPartyId = partyId; // Store the party ID to prevent self-joining
-            document.getElementById('createPartyButton').style.display = 'none';
             const availablePartiesList = document.getElementById('availablePartiesList');
-            availablePartiesList.innerHTML = `<li class="party-item">Your party is created. Waiting for an opponent...</li>`;
+            const partyItem = document.createElement('li');
+            partyItem.textContent = `Party: ${teamName}`;
+
+            const joinButton = document.createElement('button');
+            joinButton.textContent = 'Join Party';
+            joinButton.disabled = true; // Disable join button for own party
+
+            partyItem.appendChild(joinButton);
+            availablePartiesList.appendChild(partyItem);
         });
 
-        // When a party is joined
+        // When a party is joined by an opponent, redirect to the attack room
         socket.on('partyJoined', ({ opponentId }) => {
-            document.body.innerHTML = `<h1>You have been paired with opponent ${opponentId}. The game will begin!</h1>`;
+            window.location.href = 'attackRoom.html'; // Redirects to the attack room
         });
     </script>
 </body>
