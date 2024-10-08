@@ -1,4 +1,5 @@
 <<<<<<< HEAD
+<<<<<<< HEAD
 const attackDefenseKey = {
     A: { attacks: ["DDoS", "Brute Force"], defenses: ["Load Balancing", "MFA"], room: "Main Server", points: 10 },
     B: { attacks: ["SQL Injection", "Data Breach"], defenses: ["Encryption", "Input Validation"], room: "Database", points: 8 },
@@ -98,6 +99,8 @@ function determineWinner() {
     document.getElementById("team2DefendedRooms").innerHTML = "Team 2 defended: " + (team2DefendedRooms.length ? team2DefendedRooms.join(', ') : "No rooms");
 }
 =======
+=======
+>>>>>>> 7f815aadbf4801dcc1c195485684a2357f0b9f8a
 const attackDefenseKey = {
     A: { attacks: ["DDoS", "Brute Force"], defenses: ["Load Balancing", "MFA"] },
     B: { attacks: ["SQL Injection", "Data Breach"], defenses: ["Encryption", "Input Validation"] },
@@ -155,4 +158,7 @@ function determineWinner() {
     let winnerText = team1Points > team2Points ? "Team 1 Wins!" : team1Points < team2Points ? "Team 2 Wins!" : "It's a Draw!";
     document.getElementById("winner").innerHTML = "Winner: " + winnerText;
 }
+<<<<<<< HEAD
 >>>>>>> ebd3743 (Initial commit)
+=======
+>>>>>>> 7f815aadbf4801dcc1c195485684a2357f0b9f8a

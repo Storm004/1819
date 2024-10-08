@@ -9,17 +9,28 @@
 
 <body>
     <h1>Cybersecurity Multiplayer Game</h1>
+<<<<<<< HEAD
     <button id="joinGameButton">Join Game</button>
+=======
+
+    <button id="joinGameButton">Join Game</button>
+
+>>>>>>> 7f815aadbf4801dcc1c195485684a2357f0b9f8a
     <div id="gameActions" style="display:none;">
         <h2>Submit Your Actions</h2>
         <input type="text" id="attack1" placeholder="Attack 1">
         <input type="text" id="defense1" placeholder="Defense 1">
         <button id="submitActions">Submit Actions</button>
     </div>
+<<<<<<< HEAD
+=======
+
+>>>>>>> 7f815aadbf4801dcc1c195485684a2357f0b9f8a
     <div id="results" style="display:none;">
         <h2>Game Results</h2>
         <p id="resultText"></p>
     </div>
+<<<<<<< HEAD
     <script src="/socket.io/socket.io.js"></script>
     <script>
         const socket = io();
@@ -29,19 +40,56 @@
         socket.on('waitingForOpponent', () => {
             alert('Waiting for an opponent to join...');
         });
+=======
+
+    <!-- Socket.IO client library -->
+    <script src="/socket.io/socket.io.js"></script>
+
+    <script>
+        // Replace '192.168.1.x' with your actual local IP address
+        const socket = io('http://10.148.20.93.x:3000');
+
+        document.getElementById('joinGameButton').addEventListener('click', () => {
+            socket.emit('joinGame');
+        });
+
+        socket.on('waitingForOpponent', () => {
+            alert('Waiting for an opponent to join...');
+        });
+
+>>>>>>> 7f815aadbf4801dcc1c195485684a2357f0b9f8a
         socket.on('paired', ({ opponentId, gameId }) => {
             alert(`Paired with opponent ${opponentId}.`);
             document.getElementById('gameActions').style.display = 'block';
         });
+<<<<<<< HEAD
         document.getElementById('submitActions').addEventListener('click', () => {
             const attack1 = document.getElementById('attack1').value;
             const defense1 = document.getElementById('defense1').value;
             socket.emit('submitActions', { actions: { attacks: [attack1], defenses: [defense1] } });
         });
+=======
+
+        document.getElementById('submitActions').addEventListener('click', () => {
+            const attack1 = document.getElementById('attack1').value;
+            const defense1 = document.getElementById('defense1').value;
+            socket.emit('submitActions', {
+                actions: {
+                    attacks: [attack1],
+                    defenses: [defense1]
+                }
+            });
+        });
+
+>>>>>>> 7f815aadbf4801dcc1c195485684a2357f0b9f8a
         socket.on('gameResults', ({ attacks, defenses }) => {
             document.getElementById('resultText').innerHTML = `Attacks: ${JSON.stringify(attacks)}<br>Defenses: ${JSON.stringify(defenses)}`;
             document.getElementById('results').style.display = 'block';
         });
+<<<<<<< HEAD
+=======
+
+>>>>>>> 7f815aadbf4801dcc1c195485684a2357f0b9f8a
         socket.on('opponentLeft', () => {
             alert('Your opponent left the game.');
         });
