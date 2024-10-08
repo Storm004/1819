@@ -14,7 +14,7 @@ function determineWinner() {
     let team1Points = 0;
     let team2Points = 0;
 
-    // Team 1 Inputs
+    // Team 1 Inputs (modify IDs to be correct)
     let team1Attacks = [
         document.getElementById("team1Attack1").value,
         document.getElementById("team1Attack2").value,
@@ -26,7 +26,7 @@ function determineWinner() {
         document.getElementById("team1Defense3").value
     ];
 
-    // Team 2 Inputs
+    // Team 2 Inputs (modify IDs to be correct)
     let team2Attacks = [
         document.getElementById("team2Attack1").value,
         document.getElementById("team2Attack2").value,
