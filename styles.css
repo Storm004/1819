@@ -1,44 +1,60 @@
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> 169a33e91d58e0b55b7d919ab8654aa371c02a2e
 body {
     font-family: Arial, sans-serif;
-    background-color: #f4f4f4;
+    background-color: #f4f4f9;
+    color: #333;
+    margin: 0;
+    padding: 0;
+}
+
+.container {
+    max-width: 600px;
+    margin: 50px auto;
+    background-color: white;
     padding: 20px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    border-radius: 8px;
     text-align: center;
 }
 
-#game-area {
-    background-color: white;
-    padding: 20px;
-    border-radius: 10px;
-    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-    max-width: 600px;
-    margin: 0 auto;
+h1 {
+    font-size: 2.5em;
+    margin-bottom: 20px;
 }
 
-input {
-    margin: 10px;
+form {
+    margin-bottom: 30px;
+}
+
+input[type="text"] {
+    width: 80%;
     padding: 10px;
-    border: 1px solid #ccc;
+    margin: 10px 0;
     border-radius: 5px;
+    border: 1px solid #ccc;
 }
 
 button {
     padding: 10px 20px;
-    border: none;
-    background-color: #28a745;
+    background-color: #4CAF50;
     color: white;
+    border: none;
     border-radius: 5px;
     cursor: pointer;
 }
 
 button:hover {
-    background-color: #218838;
+    background-color: #45a049;
 }
 
-#results {
-    margin-top: 20px;
+#gameActions, #results {
+    margin-top: 30px;
 }
+<<<<<<< HEAD
 
 h3 {
     margin-bottom: 5px;
@@ -96,3 +112,5 @@ h3 {
 >>>>>>> ebd3743 (Initial commit)
 =======
 >>>>>>> 7f815aadbf4801dcc1c195485684a2357f0b9f8a
+=======
+>>>>>>> 169a33e91d58e0b55b7d919ab8654aa371c02a2e
