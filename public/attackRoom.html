@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Attack Room</title>
+    <title>Attack and Defense Selection</title>
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -16,38 +16,29 @@
             margin-top: 50px;
         }
 
-        form {
+        .actions {
             margin-top: 30px;
         }
 
-        input[type="text"] {
+        select {
+            width: 50%;
             padding: 10px;
-            width: 300px;
             margin: 10px 0;
+            font-size: 16px;
         }
 
         button {
             background-color: #28a745;
             color: white;
-            padding: 10px 20px;
             border: none;
+            padding: 10px 20px;
+            font-size: 18px;
             cursor: pointer;
             border-radius: 5px;
-            margin-top: 20px;
         }
 
-        nav {
-            margin: 20px 0;
-        }
-
-        nav a {
-            margin: 0 10px;
-            text-decoration: none;
-            color: #007bff;
-        }
-
-        nav a:hover {
-            text-decoration: underline;
+        button:hover {
+            background-color: #218838;
         }
     </style>
 </head>
@@ -55,34 +46,64 @@
 <body>
     <h1>Choose Your Attacks and Defenses</h1>
 
-    <!-- Navigation to house map and points system -->
-    <nav>
-        <a href="houseMap.html" target="_blank">House Map</a> |
-        <a href="pointsKey.html" target="_blank">Points System Key</a>
-    </nav>
+    <div class="actions">
+        <h2>Attacks:</h2>
+        <select id="attack1">
+            <option value="">Enter Attack 1</option>
+            <option value="DDoS">DDoS</option>
+            <option value="Brute Force">Brute Force</option>
+            <option value="SQL Injection">SQL Injection</option>
+            <option value="Phishing">Phishing</option>
+        </select>
 
-    <form id="attackForm">
-        <h3>Attacks:</h3>
-        <input type="text" id="attack1" placeholder="Enter Attack 1" required><br>
-        <input type="text" id="attack2" placeholder="Enter Attack 2" required><br>
-        <input type="text" id="attack3" placeholder="Enter Attack 3" required><br>
+        <select id="attack2">
+            <option value="">Enter Attack 2</option>
+            <option value="Ransomware">Ransomware</option>
+            <option value="Data Breach">Data Breach</option>
+            <option value="Man-in-the-Middle">Man-in-the-Middle</option>
+            <option value="Spoofing">Spoofing</option>
+        </select>
 
-        <h3>Defenses:</h3>
-        <input type="text" id="defense1" placeholder="Enter Defense 1" required><br>
-        <input type="text" id="defense2" placeholder="Enter Defense 2" required><br>
-        <input type="text" id="defense3" placeholder="Enter Defense 3" required><br>
+        <select id="attack3">
+            <option value="">Enter Attack 3</option>
+            <option value="Malware">Malware</option>
+            <option value="Packet Sniffing">Packet Sniffing</option>
+            <option value="Credential Stuffing">Credential Stuffing</option>
+            <option value="Spear Phishing">Spear Phishing</option>
+        </select>
 
-        <button type="submit">Submit Actions</button>
-    </form>
+        <h2>Defenses:</h2>
+        <select id="defense1">
+            <option value="">Enter Defense 1</option>
+            <option value="Load Balancing">Load Balancing</option>
+            <option value="MFA">MFA</option>
+            <option value="Encryption">Encryption</option>
+            <option value="Packet Filtering">Packet Filtering</option>
+        </select>
 
-    <script src="/socket.io/socket.io.js"></script>
+        <select id="defense2">
+            <option value="">Enter Defense 2</option>
+            <option value="Email Filtering">Email Filtering</option>
+            <option value="Regular Backups">Regular Backups</option>
+            <option value="Intrusion Detection">Intrusion Detection</option>
+            <option value="Logging">Logging</option>
+        </select>
+
+        <select id="defense3">
+            <option value="">Enter Defense 3</option>
+            <option value="Limited Access">Limited Access</option>
+            <option value="Strong Password Policies">Strong Password Policies</option>
+            <option value="Input Validation">Input Validation</option>
+            <option value="Firewalls">Firewalls</option>
+        </select>
+
+        <br><br>
+        <button id="submitActions">Submit Actions</button>
+    </div>
+
     <script>
-        const socket = io();
-
-        // Handle form submission of attacks and defenses
-        document.getElementById('attackForm').addEventListener('submit', (event) => {
-            event.preventDefault();
-
+        // Handle the action submission
+        document.getElementById('submitActions').addEventListener('click', () => {
             const attack1 = document.getElementById('attack1').value;
             const attack2 = document.getElementById('attack2').value;
             const attack3 = document.getElementById('attack3').value;
@@ -91,24 +112,13 @@
             const defense2 = document.getElementById('defense2').value;
             const defense3 = document.getElementById('defense3').value;
 
-            // Send selected actions to the server
-            socket.emit('submitActions', {
+            const actions = {
                 attacks: [attack1, attack2, attack3],
                 defenses: [defense1, defense2, defense3]
-            });
+            };
 
-            // Show message after submission
-            alert('Actions submitted! Waiting for results...');
-        });
-
-        // Listen for game results from the server
-        socket.on('gameResults', (results) => {
-            document.body.innerHTML = `
-                <h1>Game Results</h1>
-                <p><strong>Your Attacks:</strong> ${JSON.stringify(results.attacks)}</p>
-                <p><strong>Your Defenses:</strong> ${JSON.stringify(results.defenses)}</p>
-                <p><strong>Winner:</strong> ${results.winner}</p>
-            `;
+            // Emit the selected actions to the server
+            socket.emit('submitActions', actions);
         });
     </script>
 </body>
