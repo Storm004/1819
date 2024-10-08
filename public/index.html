@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cybersecurity Multiplayer Game</title>
+</head>
+
+<body>
+    <h1>Cybersecurity Multiplayer Game</h1>
+
+    <button id="joinGameButton">Join Game</button>
+
+    <div id="gameActions" style="display:none;">
+        <h2>Submit Your Actions</h2>
+        <input type="text" id="attack1" placeholder="Attack 1">
+        <input type="text" id="defense1" placeholder="Defense 1">
+        <button id="submitActions">Submit Actions</button>
+    </div>
+
+    <div id="results" style="display:none;">
+        <h2>Game Results</h2>
+        <p id="resultText"></p>
+    </div>
+
+    <!-- Socket.IO client library -->
+    <script src="/socket.io/socket.io.js"></script>
+
+    <script>
+        // Replace '192.168.1.x' with your actual local IP address
+        const socket = io('http://10.148.20.93.x:3000');
+
+        document.getElementById('joinGameButton').addEventListener('click', () => {
+            socket.emit('joinGame');
+        });
+
+        socket.on('waitingForOpponent', () => {
+            alert('Waiting for an opponent to join...');
+        });
+
+        socket.on('paired', ({ opponentId, gameId }) => {
+            alert(`Paired with opponent ${opponentId}.`);
+            document.getElementById('gameActions').style.display = 'block';
+        });
+
+        document.getElementById('submitActions').addEventListener('click', () => {
+            const attack1 = document.getElementById('attack1').value;
+            const defense1 = document.getElementById('defense1').value;
+            socket.emit('submitActions', {
+                actions: {
+                    attacks: [attack1],
+                    defenses: [defense1]
+                }
+            });
+        });
+
+        socket.on('gameResults', ({ attacks, defenses }) => {
+            document.getElementById('resultText').innerHTML = `Attacks: ${JSON.stringify(attacks)}<br>Defenses: ${JSON.stringify(defenses)}`;
+            document.getElementById('results').style.display = 'block';
+        });
+
+        socket.on('opponentLeft', () => {
+            alert('Your opponent left the game.');
+        });
+    </script>
+</body>
+
+</html>
