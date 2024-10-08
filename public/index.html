@@ -9,28 +9,31 @@
 </head>
 
 <body>
-    <div id="page1" class="page">
+    <div class="container">
         <h1>Welcome to the Cybersecurity Multiplayer Game</h1>
         <p>Enter your team name to begin the battle!</p>
+
         <form id="teamForm">
             <label for="teamName">Team Name:</label>
             <input type="text" id="teamName" name="teamName" required placeholder="Display Name">
             <button type="submit" id="joinGameButton">Join Game</button>
         </form>
-    </div>
 
-    <div id="page2" class="page" style="display:none;">
-        <h2>Create or Join a Party</h2>
-        <button id="createPartyButton">Create Party</button>
-        <h3>Available Parties:</h3>
-        <ul id="partyList"></ul>
-    </div>
+        <div id="partyOptions" style="display:none;">
+            <h2>Party Options</h2>
+            <button id="createPartyButton">Create Party</button>
 
-    <div id="page3" class="page" style="display:none;">
-        <h2>Submit Your Actions</h2>
-        <input type="text" id="attack1" placeholder="Attack 1">
-        <input type="text" id="defense1" placeholder="Defense 1">
-        <button id="submitActions">Submit Actions</button>
+            <h3>Available Parties:</h3>
+            <ul id="availablePartiesList"></ul>
+        </div>
+
+        <div id="gameActions" style="display:none;">
+            <h2>Submit Your Actions</h2>
+            <input type="text" id="attack1" placeholder="Attack 1">
+            <input type="text" id="defense1" placeholder="Defense 1">
+            <button id="submitActions">Submit Actions</button>
+        </div>
+
         <div id="results" style="display:none;">
             <h2>Game Results</h2>
             <p id="resultText"></p>

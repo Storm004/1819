@@ -1,62 +1,64 @@
 const socket = io();
-let playerTeamName = '';
 
+// Handle the team name submission
 document.getElementById('teamForm').addEventListener('submit', (event) => {
     event.preventDefault();
-    playerTeamName = document.getElementById('teamName').value;
-
-    // Move to the next page (party creation/joining)
-    document.getElementById('page1').style.display = 'none';
-    document.getElementById('page2').style.display = 'block';
-
-    socket.emit('joinGame', { teamName: playerTeamName });
+    const teamName = document.getElementById('teamName').value;
+    socket.emit('enterGame', teamName);
 });
 
-// When the "Create Party" button is clicked
-document.getElementById('createPartyButton').addEventListener('click', () => {
-    socket.emit('createParty', { teamName: playerTeamName });
-});
+// Receive party options after entering the game
+socket.on('partyOptions', (parties) => {
+    document.getElementById('teamForm').style.display = 'none';
+    document.getElementById('partyOptions').style.display = 'block';
 
-// Listening for available parties from the server
-socket.on('updatePartyList', (parties) => {
-    const partyList = document.getElementById('partyList');
-    partyList.innerHTML = '';
+    const availablePartiesList = document.getElementById('availablePartiesList');
+    availablePartiesList.innerHTML = '';
 
-    parties.forEach(party => {
+    for (const partyId in parties) {
         const partyItem = document.createElement('li');
-        partyItem.innerHTML = `<button onclick="joinParty('${party.id}')">Join Party: ${party.name}</button>`;
-        partyList.appendChild(partyItem);
-    });
+        const joinButton = document.createElement('button');
+        joinButton.textContent = 'Join Party';
+        joinButton.onclick = () => socket.emit('joinParty', partyId);
+        partyItem.textContent = `Party ID: ${partyId}`;
+        partyItem.appendChild(joinButton);
+        availablePartiesList.appendChild(partyItem);
+    }
 });
 
-// Join a party
-function joinParty(partyId) {
-    socket.emit('joinParty', { partyId });
-}
-
-// Move to game page when paired with an opponent
-socket.on('paired', ({ opponentId, gameId }) => {
-    alert(`Paired with opponent ${opponentId}. Game ID: ${gameId}`);
-
-    document.getElementById('page2').style.display = 'none';
-    document.getElementById('page3').style.display = 'block';
+// Handle party creation
+document.getElementById('createPartyButton').addEventListener('click', () => {
+    socket.emit('createParty');
 });
 
-// Submit game actions
+// When a party is created, hide the creation button
+socket.on('partyCreated', ({ partyId }) => {
+    document.getElementById('partyOptions').style.display = 'none';
+    alert(`You created a party with ID: ${partyId}. Waiting for another player.`);
+});
+
+// When a party is joined by an opponent
+socket.on('partyJoined', ({ opponentId }) => {
+    alert(`You have been paired with opponent ${opponentId}. The game will begin!`);
+});
+
+// Handle the game start
+socket.on('gameStart', () => {
+    document.getElementById('partyOptions').style.display = 'none';
+    document.getElementById('gameActions').style.display = 'block';
+});
+
+// Handle action submission
 document.getElementById('submitActions').addEventListener('click', () => {
     const attack1 = document.getElementById('attack1').value;
     const defense1 = document.getElementById('defense1').value;
-
-    socket.emit('submitActions', {
-        actions: {
-            attacks: [attack1],
-            defenses: [defense1]
-        }
-    });
+    const actions = { attacks: [attack1], defenses: [defense1] };
+    socket.emit('submitActions', actions);
 });
 
 // Show game results
-socket.on('gameResults', ({ attacks, defenses }) => {
-    document.getElementById('resultText').innerHTML = `Attacks: ${JSON.stringify(attacks)}<br>Defenses: ${JSON.stringify(defenses)}`;
+socket.on('gameResults', (results) => {
+    document.getElementById('gameActions').style.display = 'none';
     document.getElementById('results').style.display = 'block';
+    document.getElementById('resultText').innerHTML = `Results:<br>Attacks: ${JSON.stringify(results.attacks)}<br>Defenses: ${JSON.stringify(results.defenses)}`;
 });

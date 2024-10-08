@@ -6,83 +6,81 @@ const app = express();
 const server = http.createServer(app);
 const io = new Server(server);
 
-let waitingPlayers = [];
-let activeGames = {};
+let parties = {}; // Store all available parties
 
-// Serve static files (like an index.html) from the "public" directory
+// Serve static files from the "public" directory
 app.use(express.static('public'));
 
 io.on('connection', (socket) => {
     console.log('A player connected:', socket.id);
 
-    // When a player joins the game lobby
-    socket.on('joinGame', () => {
-        if (waitingPlayers.length > 0) {
-            // Pair the player with the one in the waiting list
-            let opponentSocketId = waitingPlayers.pop();
-            let gameId = socket.id + '_' + opponentSocketId;
+    // Handle when a player joins the lobby
+    socket.on('enterGame', (teamName) => {
+        socket.teamName = teamName;
+        socket.emit('partyOptions', parties);
+    });
 
-            activeGames[gameId] = {
-                players: [socket.id, opponentSocketId],
-                ready: [false, false],
-                attacks: {},
-                defenses: {},
-            };
+    // Create a new party
+    socket.on('createParty', () => {
+        const partyId = socket.id;
+        parties[partyId] = {
+            players: [socket],
+            partyId: partyId
+        };
+        socket.emit('partyCreated', { partyId });
+        io.emit('partyOptions', parties); // Update the available parties for everyone
+    });
 
-            // Notify both players they've been paired
-            io.to(socket.id).emit('paired', { opponentId: opponentSocketId, gameId });
-            io.to(opponentSocketId).emit('paired', { opponentId: socket.id, gameId });
-        } else {
-            // No waiting players, add this player to the waiting list
-            waitingPlayers.push(socket.id);
-            socket.emit('waitingForOpponent');
+    // Join an existing party
+    socket.on('joinParty', (partyId) => {
+        const party = parties[partyId];
+        if (party.players.length < 2) {
+            party.players.push(socket);
+            io.to(party.players[0].id).emit('partyJoined', { opponentId: socket.id });
+            socket.emit('partyJoined', { opponentId: party.players[0].id });
+
+            // Start the game when two players are in the same party
+            io.to(party.players[0].id).emit('gameStart');
+            io.to(party.players[1].id).emit('gameStart');
         }
     });
 
-    // When a player submits attacks and defenses
-    socket.on('submitActions', ({ gameId, actions }) => {
-        let game = activeGames[gameId];
-        if (!game) return;
+    // Handle when a player submits their actions
+    socket.on('submitActions', ({ partyId, actions }) => {
+        const party = parties[partyId];
+        const playerIndex = party.players.indexOf(socket);
+        if (playerIndex !== -1) {
+            party.actions = party.actions || {};
+            party.actions[playerIndex] = actions;
 
-        let playerIndex = game.players.indexOf(socket.id);
-        game.attacks[socket.id] = actions.attacks;
-        game.defenses[socket.id] = actions.defenses;
-        game.ready[playerIndex] = true;
-
-        // Check if both players submitted actions
-        if (game.ready[0] && game.ready[1]) {
-            // Send results back to both players
-            io.to(game.players[0]).emit('gameResults', { attacks: game.attacks, defenses: game.defenses });
-            io.to(game.players[1]).emit('gameResults', { attacks: game.attacks, defenses: game.defenses });
-
-            // Clean up the game after it's done
-            delete activeGames[gameId];
+            // When both players submit, emit the results
+            if (party.actions[0] && party.actions[1]) {
+                io.to(party.players[0].id).emit('gameResults', party.actions);
+                io.to(party.players[1].id).emit('gameResults', party.actions);
+                delete parties[partyId]; // Remove party after the game ends
+            }
         }
     });
 
-    // Handle disconnections
+    // Handle player disconnection
     socket.on('disconnect', () => {
         console.log('A player disconnected:', socket.id);
-
-        // Remove from waiting players if they were waiting
-        waitingPlayers = waitingPlayers.filter((id) => id !== socket.id);
-
-        // Remove any active game they were in
-        Object.keys(activeGames).forEach((gameId) => {
-            let game = activeGames[gameId];
-            if (game.players.includes(socket.id)) {
-                let opponentId = game.players.find((id) => id !== socket.id);
-                io.to(opponentId).emit('opponentLeft');
-                delete activeGames[gameId];
+        Object.keys(parties).forEach((partyId) => {
+            const party = parties[partyId];
+            if (party.players.includes(socket)) {
+                party.players = party.players.filter((player) => player !== socket);
+                if (party.players.length === 0) {
+                    delete parties[partyId];
+                } else {
+                    io.to(party.players[0].id).emit('opponentLeft');
+                }
             }
         });
     });
 });
 
-// Start the server on port 3000
-// Use the port provided by Heroku or default to 3000 for local development
+// Start the server on port 3000 (or the port provided by Heroku)
 const port = process.env.PORT || 3000;
 server.listen(port, () => {
     console.log(`Server is running on port ${port}`);
 });
-
